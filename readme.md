@@ -20,9 +20,9 @@ Upload an entire directory to a collection.
 
 ```
 options:
-  -h, --help            			Show the help message and exit
+  -h, --help						Show the help message and exit
   -o, --collection COLLECTION_ID	Output collection ID
-  -n, --name NAME       			Name of collection to be created if ID not specified
+  -n, --name NAME					Name of collection to be created if ID not specified
   -p, --project PROJECT_ID			Output project ID
   -i, --input DIRECTORY				Path of directory to upload
 ```
@@ -36,7 +36,7 @@ If you wish to download items faster, use the native Archiver tool in Weedremeed
 
 ```
 options:
-  -h, --help            			Show this help message and exit
+  -h, --help						Show this help message and exit
   -i, --collection COLLECTION_ID	Collection ID to download
-  -o, --output OUTPUT   			Output path
+  -o, --output OUTPUT				Output path
 ```
