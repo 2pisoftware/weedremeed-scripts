@@ -60,7 +60,7 @@ def raise_for_status(response):
     response.raise_for_status()
 
 
-BASE_URL = "https://test.portal.weedremeed.com.au"
+BASE_URL = "https://portal.weedremeed.com.au"
 token = os.environ["TOKEN"]
 client = AuthenticatedClient(
     base_url=BASE_URL,
@@ -139,14 +139,14 @@ def uploadChunk(upload_id: str, chunk: bytes, chunkId: int):
 
 def uploadFile(entry: os.DirEntry[str]):
     stat = entry.stat()
-
+    
     upload = upload_file.sync(
         client=client,
         collection_id=collection_id,
         body=UploadFileBody.from_dict(
             {
                 "filename": entry.name,
-                "mime": mimetypes.guess_type(entry.path)[0],
+                "mime": mimetypes.guess_type(entry.path)[0] or "application/octet-stream",
                 "size": stat.st_size,
             }
         ),
@@ -188,8 +188,7 @@ total = len(os.listdir(args.directory))
 
 with os.scandir(args.directory) as it:
     for inx, entry in enumerate(it):
-        if (inx % (total / 10) == 0) or total < 20:
-            print("Uploading " + str(inx + 1) + " of " + str(total + 1))
+        print("Uploading " + str(inx + 1) + " of " + str(total + 1))
 
         uploadFile(entry)
 
