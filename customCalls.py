@@ -132,6 +132,7 @@ for project in projects:
     ## OK, now collections!
     #############################################################################
 
+    map_to_project = str(df_check_delivered['id'].unique()[0])
     for collection in project.collections:
         if collection.type_ != "Upload" and collection.type_ != "Empty":
             print("Skipping 'special' collection '" + collection.title + "'")
@@ -139,7 +140,6 @@ for project in projects:
 
         print("Downloading collection '" + collection.title + "'")
         print("Total attachments: " + str(collection.size))
-        map_to_project = str(df_check_delivered['id'].unique()[0])
         print("Belongs to "+df_check_delivered['title'].unique()[0]+" "+map_to_project)
 
         is_delivered = False
@@ -176,7 +176,7 @@ for project in projects:
             sys.exit(1)
 
         print("Delivering to collection: "+map_to_collection)
-        
+
         while True:
             for file in content.files:
 
@@ -195,7 +195,7 @@ for project in projects:
                 r = httpx.get(file.url)
                 with open(out_dir / file.filename, "wb") as f:
                     f.write(r.content)
-
+                print("UPLOADING!")
                 WR_lib_uploader.uploadFile(client=dst_client, entry_name=file.filename, entry_path=out_dir / file.filename, collection_id=map_to_collection)
                
             if not content.next_:
@@ -205,5 +205,4 @@ for project in projects:
 
             if (not isinstance(content, GetACollectionsContentGetACollectionsContentOk) or not content.files):
                 break
-                
-    exit()
+          
