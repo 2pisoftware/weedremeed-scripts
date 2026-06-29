@@ -64,12 +64,12 @@ shipped_projects = list_projects.sync(client=dst_client)
 df_shipped_prj = pd.DataFrame([x.to_dict() for x in shipped_projects])
 
 remapping_projects = {
-    "9":31,
+    # "9":31,
     "10":32,
-    "11":33,
-    "12":34,
-    "13":35,
-    "14":36,
+    # "11":33,
+    # "12":34,
+    # "13":35,
+    # "14":36,
 }
 
 if not isinstance(projects, list):
@@ -89,18 +89,23 @@ for project in projects:
         print(project)
         sys.exit(1)
 
+    grouped_id = str(project.project_group_id)
+    if not grouped_id in remapping_projects:        
+        print("\n-------------------\nSKIPPING - PROJECT GROUP NOT MAPPED: "+grouped_id)
+        continue
+
     print("\n-------------------\nPROJECT IS: "+str(project.id)+" "+ project.title)
-    delivery_group = remapping_projects[str(project.project_group_id)]
+    delivery_group = remapping_projects[grouped_id]
     print("DELIVERY IS TO:"+str(delivery_group))
 
     df_check_delivered = df_shipped_prj[df_shipped_prj['project_group_id'] == delivery_group]
-    is_delivered = project.title in df_check_delivered['title'].values
+    is_delivered = project.title in df_check_delivered['title'].tolist()
 
     if is_delivered:
         print("PROJECT PLACEHOLDER IS ALREADY DELIVERED: "+str(is_delivered))
         df_check_delivered = df_shipped_prj[df_shipped_prj['title'] == project.title]['id'].unique()[0]
         delivery_dst = get_project.sync(client=dst_client, project_id=str(df_check_delivered))
-        df_check_delivered= pd.DataFrame(delivery_dst.to_dict())
+        df_check_delivered= pd.DataFrame([delivery_dst.to_dict()])
 
     else:
         if not project.description:
@@ -125,7 +130,7 @@ for project in projects:
         df_shipped_prj = pd.DataFrame([x.to_dict() for x in shipped_projects])
         df_check_delivered = df_shipped_prj[df_shipped_prj['title'] == project.title]['id'].unique()[0]
         delivery_dst = get_project.sync(client=dst_client, project_id=str(df_check_delivered))
-        df_check_delivered= pd.DataFrame(delivery_dst.to_dict())
+        df_check_delivered= pd.DataFrame([delivery_dst.to_dict()])
         
         
     #############################################################################
@@ -133,6 +138,7 @@ for project in projects:
     #############################################################################
 
     map_to_project = str(df_check_delivered['id'].unique()[0])
+
     for collection in project.collections:
         if collection.type_ != "Upload" and collection.type_ != "Empty":
             print("Skipping 'special' collection '" + collection.title + "'")
@@ -143,26 +149,27 @@ for project in projects:
         print("Belongs to "+df_check_delivered['title'].unique()[0]+" "+map_to_project)
 
         is_delivered = False
+        
         if 'collections' in df_check_delivered.columns:
-            df_check_delivered = pd.DataFrame([x for x in df_check_delivered['collections'].values])
-            is_delivered = collection.title in df_check_delivered['title'].values
-
+            df_check_delivered = pd.DataFrame(df_check_delivered['collections'].tolist()[0])
+            is_delivered = ('title' in df_check_delivered.columns) and (collection.title in df_check_delivered['title'].tolist())
+            
         if is_delivered:
             print("COLLECTION PLACEHOLDER IS ALREADY DELIVERED: "+str(is_delivered))
             map_to_collection = str(df_check_delivered[df_check_delivered['title'] == collection.title]['id'].unique()[0])
         else:
-            if not project.description:
+            if not collection.description:
                 collection.description = project.title + " collections:</br> " + collection.title
-                # if not is_delivered:
-                WR_lib_uploader.createNewCollection(client=dst_client, name=collection.title, description=collection.description, project_id=map_to_project)
-                # And resync to get the new ID!
-                shipped_projects = list_projects.sync(client=dst_client)
-                df_shipped_prj = pd.DataFrame([x.to_dict() for x in shipped_projects])
-                df_check_delivered = df_shipped_prj[df_shipped_prj['title'] == project.title]['id'].unique()[0]
-                delivery_dst = get_project.sync(client=dst_client, project_id=str(df_check_delivered))
-                df_check_delivered= pd.DataFrame(delivery_dst.to_dict())
-                df_check_delivered = pd.DataFrame([x for x in df_check_delivered['collections'].values])
-                map_to_collection = str(df_check_delivered[df_check_delivered['title'] == collection.title]['id'].unique()[0])
+            # if not is_delivered:
+            WR_lib_uploader.createNewCollection(client=dst_client, name=collection.title, description=collection.description, project_id=map_to_project)
+            # And resync to get the new ID!
+            shipped_projects = list_projects.sync(client=dst_client)
+            df_shipped_prj = pd.DataFrame([x.to_dict() for x in shipped_projects])
+            df_check_delivered = df_shipped_prj[df_shipped_prj['title'] == project.title]['id'].unique()[0]
+            delivery_dst = get_project.sync(client=dst_client, project_id=str(df_check_delivered))
+            df_check_delivered= pd.DataFrame([delivery_dst.to_dict()])
+            df_check_delivered = pd.DataFrame(df_check_delivered['collections'].tolist()[0])
+            map_to_collection = str(df_check_delivered[df_check_delivered['title'] == collection.title]['id'].unique()[0])
 
         #############################################################################
         ####### Iterate file set into local cache/copy:
