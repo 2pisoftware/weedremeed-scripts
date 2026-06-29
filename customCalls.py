@@ -22,8 +22,8 @@ from weedremeed_client.api.projects import get_project, list_projects, create_pr
 from weedremeed_client.models.project import Project
 
 parser = ArgumentParser(
-    description="AdHoc Org data migration in from Weedremeed",
-    epilog="The 'TOKEN' environment variable must be set to the developer API key in the developer console.",
+    description="AdHoc Org data migration for Weedremeed: duplicates entire ProjectGroup",
+    epilog="The 'WR_SRC_TOKEN' and 'WR_DST_TOKEN' environment variables must be set to the developer API key(s) in the developer console.",
 )
 
 parser.add_argument(
@@ -32,6 +32,22 @@ parser.add_argument(
     dest="output",
     type=pathlib.Path,
     help="Output path",
+    required=True,
+)
+parser.add_argument(
+    "-s",
+    "--source",
+    dest="src_grp",
+    type=str,
+    help="Source ProjectGroup ID",
+    required=True,
+)
+parser.add_argument(
+    "-d",
+    "--destination",
+    dest="dst_grp",
+    type=str,
+    help="Destination ProjectGroup ID",
     required=True,
 )
 
@@ -57,20 +73,15 @@ dst_client = AuthenticatedClient(
     httpx_args={"event_hooks": {"response": [raise_for_status]}},
 )
 
+remapping_projects = {}
+remapping_projects[str(args.src_grp)] = int(args.dst_grp)
+print("Project Group remapping is", remapping_projects)
 
 projects = list_projects.sync(client=src_client)
 # df_prj = pd.DataFrame([x.to_dict() for x in projects])
 shipped_projects = list_projects.sync(client=dst_client)
 df_shipped_prj = pd.DataFrame([x.to_dict() for x in shipped_projects])
 
-remapping_projects = {
-    # "9":31,
-    "10":32,
-    # "11":33,
-    # "12":34,
-    # "13":35,
-    # "14":36,
-}
 
 if not isinstance(projects, list):
     print(projects)
