@@ -1,0 +1,4 @@
+
+# pattern mask intented for VENV and SCRATCH FILE caches
+# eg: WR_OUT (file downloads) or WR_venv (local libs)
+*_*/

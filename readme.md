@@ -2,6 +2,19 @@
 
 A collection of public scripts for use with Weedremeed.
 
+For a quick setup with few environment assumptions besides linux [APT]:
+~~~
+sudo apt update; sudo apt install -y python3-venv
+deactivate; python3 -m venv WR_venv; sudo chmod +x WR_venv/bin/* -R && source WR_venv/bin/activate && pip install -r requirements.txt && sudo chmod +x WR_venv/* -R
+~~~
+
+Note, preference for any temp folder to be masked by "_" per gitignore!
+~~~
+# pattern mask intented for VENV and SCRATCH FILE caches
+# eg: WR_OUT (file downloads) or WR_venv (local libs)
+*_*/
+~~~
+
 ## Usage
 
 To use these scripts, download this repository. Then, with Python and Pip installed:
