@@ -70,11 +70,8 @@ def uploadChunk(client: AuthenticatedClient, upload_id: str, chunk: bytes, chunk
 
 
 def getFileMd5(file_path):
-    md5_hash = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(8192), b""):
-            md5_hash.update(byte_block)
-    return md5_hash.hexdigest()
+    with open(entry.path, "rb") as f:
+        return hashlib.file_digest(f, "md5")
 
 
 def uploadFile(client: AuthenticatedClient, entry_name: str, entry_path: str, collection_id: str):
