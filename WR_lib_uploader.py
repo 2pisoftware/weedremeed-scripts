@@ -69,8 +69,14 @@ def uploadChunk(client: AuthenticatedClient, upload_id: str, chunk: bytes, chunk
     return True
 
 
+def getFileMd5(file_path):
+    with open(entry.path, "rb") as f:
+        return hashlib.file_digest(f, "md5")
+
+
 def uploadFile(client: AuthenticatedClient, entry_name: str, entry_path: str, collection_id: str):
     stat = os.stat(entry_path)
+    file_md5 = getFileMd5(entry_path)
     
     upload = upload_file.sync(
         client=client,
@@ -80,10 +86,11 @@ def uploadFile(client: AuthenticatedClient, entry_name: str, entry_path: str, co
                 "filename": entry_name,
                 "mime": mimetypes.guess_type(entry_path)[0] or "application/octet-stream",
                 "size": stat.st_size,
+                "md5": file_md5
             }
         ),
     )
-
+    
     return_state = isinstance(upload, UploadFileUploadFileOk)
     if not return_state:
         print(upload)
